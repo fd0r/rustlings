@@ -33,10 +33,28 @@ impl Default for Person {
 // If while parsing the age, something goes wrong, then return the default of Person
 // Otherwise, then return an instantiated Person object with the results
 
-// I AM NOT DONE
+// This could probably be done by wrapping the main parsing code with a function and throw an
+// error if anything happened. And if any error is raised then return default
 
 impl From<&str> for Person {
     fn from(s: &str) -> Person {
+        let splitted = s.split(",").collect::<Vec<&str>>();
+        if splitted.len() != 2 {
+            return Person::default();
+        } else {
+            match (splitted[1].parse::<usize>(), splitted[0]) {
+                (Ok(age), "") => {
+                    return Person::default();
+                }
+                (Ok(age), name) => {
+                    return Person {
+                        name: name.to_string(),
+                        age,
+                    }
+                }
+                (_, _) => return Person::default(),
+            }
+        }
     }
 }
 
