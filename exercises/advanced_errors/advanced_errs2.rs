@@ -16,8 +16,6 @@
 // 4. Complete the partial implementation of `Display` for
 //    `ParseClimateError`.
 
-// I AM NOT DONE
-
 use std::error::Error;
 use std::fmt::{self, Display, Formatter};
 use std::num::{ParseFloatError, ParseIntError};
@@ -34,6 +32,8 @@ enum ParseClimateError {
     ParseFloat(ParseFloatError),
 }
 
+impl Error for ParseClimateError {}
+
 // This `From` implementation allows the `?` operator to work on
 // `ParseIntError` values.
 impl From<ParseIntError> for ParseClimateError {
@@ -46,12 +46,9 @@ impl From<ParseIntError> for ParseClimateError {
 // `ParseFloatError` values.
 impl From<ParseFloatError> for ParseClimateError {
     fn from(e: ParseFloatError) -> Self {
-        // TODO: Complete this function
+        Self::ParseFloat(e)
     }
 }
-
-// TODO: Implement a missing trait so that `main()` below will compile. It
-// is not necessary to implement any methods inside the missing trait.
 
 // The `Display` trait allows for other code to obtain the error formatted
 // as a user-visible string.
@@ -64,6 +61,9 @@ impl Display for ParseClimateError {
         match self {
             NoCity => write!(f, "no city name"),
             ParseFloat(e) => write!(f, "error parsing temperature: {}", e),
+            ParseInt(e) => write!(f, "error parsing year: {}", e),
+            Empty => write!(f, "empty input"),
+            BadLen => write!(f, "incorrect number of fields"),
         }
     }
 }
@@ -88,6 +88,9 @@ impl FromStr for Climate {
     // TODO: Complete this function by making it handle the missing error
     // cases.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s == "" {
+            return Err(ParseClimateError::Empty);
+        }
         let v: Vec<_> = s.split(',').collect();
         let (city, year, temp) = match &v[..] {
             [city, year, temp] => (city.to_string(), year, temp),
@@ -95,6 +98,9 @@ impl FromStr for Climate {
         };
         let year: u32 = year.parse()?;
         let temp: f32 = temp.parse()?;
+        if city == "" {
+            return Err(ParseClimateError::NoCity);
+        }
         Ok(Climate { city, year, temp })
     }
 }
